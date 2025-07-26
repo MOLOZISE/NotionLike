@@ -12,7 +12,8 @@
   "type": "commonjs",
   "dependencies": {
     "express": "^5.1.0",
-    "express-session": "^1.17.3"
+    "express-session": "^1.17.3",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "jest": "^30.0.5",
