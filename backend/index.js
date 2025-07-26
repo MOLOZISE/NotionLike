@@ -1,9 +1,16 @@
 const express = require('express');
 const session = require('express-session');
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 app.use(
   session({
     secret: 'notionlike-secret',
@@ -66,6 +73,24 @@ app.post('/todos', auth, (req, res) => {
   const todo = { id: Date.now(), text: req.body.text, done: false };
   req.user.todos.push(todo);
   res.status(201).json(todo);
+});
+
+app.post('/chat', auth, (req, res) => {
+  const { question } = req.body;
+  const keywords = question.toLowerCase().split(/\s+/);
+  const notes = req.user.notes.filter((n) =>
+    keywords.some((k) => n.text.toLowerCase().includes(k))
+  );
+  const todos = req.user.todos.filter((t) =>
+    keywords.some((k) => t.text.toLowerCase().includes(k))
+  );
+  const texts = [
+    ...notes.map((n) => `노트: ${n.text}`),
+    ...todos.map((t) => `할일: ${t.text}${t.done ? ' (완료)' : ''}`),
+  ];
+  const answer =
+    texts.length > 0 ? texts.join('\n') : '관련 항목이 없습니다.';
+  res.json({ answer });
 });
 
 if (require.main === module) {

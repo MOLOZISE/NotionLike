@@ -30,6 +30,13 @@
     <ul id="todos"></ul>
   </div>
 
+  <div id="chat-section" style="display:none;">
+    <h2>채팅</h2>
+    <input id="question" placeholder="질문">
+    <button onclick="ask()">전송</button>
+    <pre id="answer"></pre>
+  </div>
+
 <script>
 async function register(){
   const username=document.getElementById('username').value;
@@ -37,6 +44,7 @@ async function register(){
   await fetch('http://localhost:3000/register',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
+    credentials:'include',
     body:JSON.stringify({username,password})
   });
   alert('회원가입 완료');
@@ -47,26 +55,30 @@ async function login(){
   const res=await fetch('http://localhost:3000/login',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
+    credentials:'include',
     body:JSON.stringify({username,password})
   });
   if(res.ok){
     document.getElementById('note-section').style.display='block';
     document.getElementById('todo-section').style.display='block';
+    document.getElementById('chat-section').style.display='block';
     loadData();
   }else{
     alert('로그인 실패');
   }
 }
 async function logout(){
-  await fetch('http://localhost:3000/logout',{method:'POST'});
+  await fetch('http://localhost:3000/logout',{method:'POST',credentials:'include'});
   document.getElementById('note-section').style.display='none';
   document.getElementById('todo-section').style.display='none';
+  document.getElementById('chat-section').style.display='none';
 }
 async function addNote(){
   const text=document.getElementById('noteText').value;
   const res=await fetch('http://localhost:3000/notes',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
+    credentials:'include',
     body:JSON.stringify({text})
   });
   if(res.ok){loadNotes();}
@@ -76,19 +88,33 @@ async function addTodo(){
   const res=await fetch('http://localhost:3000/todos',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
+    credentials:'include',
     body:JSON.stringify({text})
   });
   if(res.ok){loadTodos();}
 }
+async function ask(){
+  const question=document.getElementById('question').value;
+  const res=await fetch('http://localhost:3000/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'include',
+    body:JSON.stringify({question})
+  });
+  if(res.ok){
+    const data=await res.json();
+    document.getElementById('answer').textContent=data.answer;
+  }
+}
 async function loadNotes(){
-  const res=await fetch('http://localhost:3000/notes');
+  const res=await fetch('http://localhost:3000/notes',{credentials:'include'});
   const data=await res.json();
   const list=document.getElementById('notes');
   list.innerHTML='';
   data.forEach(n=>{const li=document.createElement('li');li.textContent=n.text;list.appendChild(li);});
 }
 async function loadTodos(){
-  const res=await fetch('http://localhost:3000/todos');
+  const res=await fetch('http://localhost:3000/todos',{credentials:'include'});
   const data=await res.json();
   const list=document.getElementById('todos');
   list.innerHTML='';
