@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>NotionLike</title>
+</head>
+<body>
+  <h1>NotionLike</h1>
+
+  <div id="auth">
+    <h2>회원가입 / 로그인</h2>
+    <input id="username" placeholder="아이디">
+    <input id="password" type="password" placeholder="비밀번호">
+    <button onclick="register()">회원가입</button>
+    <button onclick="login()">로그인</button>
+    <button onclick="logout()">로그아웃</button>
+  </div>
+
+  <div id="note-section" style="display:none;">
+    <h2>노트</h2>
+    <input id="noteText" placeholder="새 노트">
+    <button onclick="addNote()">추가</button>
+    <ul id="notes"></ul>
+  </div>
+
+  <div id="todo-section" style="display:none;">
+    <h2>할 일</h2>
+    <input id="todoText" placeholder="새 할 일">
+    <button onclick="addTodo()">추가</button>
+    <ul id="todos"></ul>
+  </div>
+
+<script>
+async function register(){
+  const username=document.getElementById('username').value;
+  const password=document.getElementById('password').value;
+  await fetch('http://localhost:3000/register',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,password})
+  });
+  alert('회원가입 완료');
+}
+async function login(){
+  const username=document.getElementById('username').value;
+  const password=document.getElementById('password').value;
+  const res=await fetch('http://localhost:3000/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({username,password})
+  });
+  if(res.ok){
+    document.getElementById('note-section').style.display='block';
+    document.getElementById('todo-section').style.display='block';
+    loadData();
+  }else{
+    alert('로그인 실패');
+  }
+}
+async function logout(){
+  await fetch('http://localhost:3000/logout',{method:'POST'});
+  document.getElementById('note-section').style.display='none';
+  document.getElementById('todo-section').style.display='none';
+}
+async function addNote(){
+  const text=document.getElementById('noteText').value;
+  const res=await fetch('http://localhost:3000/notes',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text})
+  });
+  if(res.ok){loadNotes();}
+}
+async function addTodo(){
+  const text=document.getElementById('todoText').value;
+  const res=await fetch('http://localhost:3000/todos',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({text})
+  });
+  if(res.ok){loadTodos();}
+}
+async function loadNotes(){
+  const res=await fetch('http://localhost:3000/notes');
+  const data=await res.json();
+  const list=document.getElementById('notes');
+  list.innerHTML='';
+  data.forEach(n=>{const li=document.createElement('li');li.textContent=n.text;list.appendChild(li);});
+}
+async function loadTodos(){
+  const res=await fetch('http://localhost:3000/todos');
+  const data=await res.json();
+  const list=document.getElementById('todos');
+  list.innerHTML='';
+  data.forEach(t=>{const li=document.createElement('li');li.textContent=t.text+(t.done?' (완료)':'');list.appendChild(li);});
+}
+async function loadData(){
+  loadNotes();
+  loadTodos();
+}
+</script>
+</body>
+</html>
